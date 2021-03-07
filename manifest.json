@@ -1,0 +1,9 @@
+{
+    "codeowners": ["@mathias-jakobsen"],
+    "config_flow": true,
+    "dependencies": ["automation", "light", "sensor"],
+    "domain": "automatic_lighting",
+    "name": "Automatic Lighting",
+    "requirements": [],
+    "version": "1.00"
+}
