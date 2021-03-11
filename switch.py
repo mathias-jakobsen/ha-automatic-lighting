@@ -259,7 +259,7 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
                 self._turn_off_unused_entities(self._tracked_lights, self._current_profile.lights)
                 self.call_service(LIGHT_DOMAIN, SERVICE_TURN_ON, entity_id=self._current_profile.lights, **self._current_profile.attributes)
             else:
-                self.logger.debug(f"No lighting profile was provided. Turning off all tracked lights: {self._tracked_lights}")
+                self.logger.debug(f"No profile was provided. Turning off all tracked lights: {self._tracked_lights}")
                 self._current_status = STATUS_IDLE
                 self.call_service(LIGHT_DOMAIN, SERVICE_TURN_OFF, entity_id=self._tracked_lights)
 
@@ -310,7 +310,6 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         self.logger.debug(f"Unblocking entity for after {self._block_duration} seconds of inactivity.")
         self._reset_block_timer()
         self._request()
-
 
 
     #--------------------------------------------#
@@ -423,9 +422,5 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         """ Triggered when manual control of the lights are detected. """
         self.logger.debug(f"Manual control was detected for the following entities: {entity_ids}")
         self._block(self._block_duration if self.is_blocked else self._block_config_duration)
-
-
-
-
 
 
