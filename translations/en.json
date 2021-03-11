@@ -1,0 +1,32 @@
+{
+    "title": "Automatic Lighting",
+    "config": {
+        "abort": {
+            "already_configured": "Integration has already been configured."
+        },
+        "step": {
+            "user": {
+                "title": "Automatic Lighting",
+                "description": "Once you have added the integration, use the options button to configure it.",
+                "data": {
+                    "name": "Name"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Automatic Lighting - Options",
+                "description": "From here you can configure settings of the integration.",
+                "data": {
+                    "block_duration": "Block duration",
+                    "light_groups": "Light groups",
+                    "entity_id": "Light group entity",
+                    "entities": "Lights",
+                    "new": "Create definition for another light group?"
+                }
+            }
+        }
+    }
+}

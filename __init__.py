@@ -12,8 +12,8 @@ from typing import Any, Dict
 # -----------------------------------------------------------#
 
 DOMAIN = "automatic_lighting"
+DOMAIN_FRIENDLY_NAME = "Automatic Lighting"
 LOGGER_BASE_NAME = __name__
-NAME = "Automatic Lighting"
 PLATFORMS = ["switch"]
 UNDO_UPDATE_LISTENER = "undo_update_listener"
 
