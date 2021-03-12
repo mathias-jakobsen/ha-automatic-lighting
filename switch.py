@@ -343,6 +343,8 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
                 if x == i:
                     unused_entities.remove(x)
 
+        unused_entities = [entity for entity in unused_entities if self.hass.states.get(entity).state == STATE_ON]
+
         if len(unused_entities) > 0:
             self.logger.debug(f"Turning off unused entities: {unused_entities}")
             self.call_service(LIGHT_DOMAIN, SERVICE_TURN_OFF, entity_id=unused_entities)
