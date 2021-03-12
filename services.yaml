@@ -5,10 +5,18 @@ track_lights:
       description: The id of the Automatic Lighting switch.
       example: switch.automatic_lighting_test
       required: true
+      selector:
+        entity:
+          domain: switch
+          integation: automatic_lighting
     lights:
       description: The lights that should be tracked.
       example: [light.test_1, light.test_2]
       required: true
+      selector:
+        target:
+          entity:
+            domain: light
 
 turn_off:
   description: Turns off the currently running profile.
@@ -17,6 +25,10 @@ turn_off:
       description: The id of the Automatic Lighting switch.
       example: [light.test_1, light.test_2]
       required: true
+      selector:
+        entity:
+          domain: switch
+          integation: automatic_lighting
 
 turn_on:
   description: Turns on a profile with the applied settings.
