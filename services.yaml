@@ -15,7 +15,7 @@ turn_off:
   fields:
     entity_id:
       description: The id of the Automatic Lighting switch.
-      example: switch.automatic_lighting_test
+      example: [light.test_1, light.test_2]
       required: true
 
 turn_on:
@@ -25,10 +25,16 @@ turn_on:
       description: The id of the Automatic Lighting switch.
       example: switch.automatic_lighting_test
       required: true
+      selector:
+        entity:
+          domain: switch
+          integation: automatic_lighting
     id:
       description: The unique id of the profile.
-      example: 12351ng821
+      example: 251n161io
       required: true
+      selector:
+        text:
     status:
       description: The status that the Automatic Lighting should go into (active or idle).
       example: active
@@ -43,10 +49,15 @@ turn_on:
       description: The lights that should be turned on.
       example: [light.test_1, light.test_2]
       required: true
+      selector:
+        target:
+          entity:
+            domain: light
     brightness:
       description: The brightness of the lights.
       example: 155
       required: false
+      default: 100
       selector:
         number:
           mode: slider
@@ -57,9 +68,27 @@ turn_on:
       description: The brightness of the lights (in %).
       example: 50
       required: false
+      default: 50
       selector:
         number:
           mode: slider
           min: 1
           max: 100
           step: 1
+          unit_of_measurement: "%"
+    kelvin:
+      description: The color temperature (in kelvin) of the lights.
+      example: 3000
+      required: false
+      default: 3000
+      selector:
+        number:
+          mode: slider
+          min: 2200
+          max: 6700
+          step: 10
+          unit_of_measurement: K
+    rgb_color:
+      description: The RGB color of the lights.
+      example: "[100, 100, 100]"
+      required: false
