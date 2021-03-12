@@ -9,7 +9,7 @@ Active Lighting (Kelvin):\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_kelvin.yaml
 
 Active Lighting (RGB):\
-https://raw.githubusercontent.com/mathias-jakobsen/automatic_lighting/dev/blueprints/automation/al_active_rgb.yaml
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_rgb.yaml
 
 Active Lighting (Adaptive):\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_adaptive.yaml
