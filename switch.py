@@ -259,9 +259,9 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
                 self._turn_off_unused_entities(self._tracked_lights, self._current_profile.lights)
                 self.call_service(LIGHT_DOMAIN, SERVICE_TURN_ON, entity_id=self._current_profile.lights, **self._current_profile.attributes)
             else:
-                self.logger.debug(f"No profile was provided. Turning off all tracked lights: {self._tracked_lights}")
+                self.logger.debug(f"No profile was provided.")
                 self._current_status = STATUS_IDLE
-                self.call_service(LIGHT_DOMAIN, SERVICE_TURN_OFF, entity_id=self._tracked_lights)
+                self._turn_off_unused_entities(self._tracked_lights, [])
 
             self.async_schedule_update_ha_state(True)
 
