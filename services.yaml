@@ -1,0 +1,65 @@
+track_lights:
+  description: Add lights to the the group of tracked lights that will apply the blocked state, when manual control is detected.
+  fields:
+    entity_id:
+      description: The id of the Automatic Lighting switch.
+      example: switch.automatic_lighting_test
+      required: true
+    lights:
+      description: The lights that should be tracked.
+      example: [light.test_1, light.test_2]
+      required: true
+
+turn_off:
+  description: Turns off the currently running profile.
+  fields:
+    entity_id:
+      description: The id of the Automatic Lighting switch.
+      example: switch.automatic_lighting_test
+      required: true
+
+turn_on:
+  description: Turns on a profile with the applied settings.
+  fields:
+    entity_id:
+      description: The id of the Automatic Lighting switch.
+      example: switch.automatic_lighting_test
+      required: true
+    id:
+      description: The unique id of the profile.
+      example: 12351ng821
+      required: true
+    status:
+      description: The status that the Automatic Lighting should go into (active or idle).
+      example: active
+      required: true
+      default: active
+      selector:
+        select:
+          options:
+            - active
+            - idle
+    lights:
+      description: The lights that should be turned on.
+      example: [light.test_1, light.test_2]
+      required: true
+    brightness:
+      description: The brightness of the lights.
+      example: 155
+      required: false
+      selector:
+        number:
+          mode: slider
+          min: 1
+          max: 255
+          step: 1
+    brightness_pct:
+      description: The brightness of the lights (in %).
+      example: 50
+      required: false
+      selector:
+        number:
+          mode: slider
+          min: 1
+          max: 100
+          step: 1
