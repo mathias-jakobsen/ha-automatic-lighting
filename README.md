@@ -34,7 +34,7 @@ It is possible to define which light entities belong to which light group entity
 | block_timeout | The time (in seconds) the integration is blocked. | 300 | int
 | light_groups | The light groups definitions. Uncheck a definition to delete it. | [] | list
 | entity_id | The entity id of the light group to create a definition for. | | str
-| entities | The entities that is part of the light group entity. | [] | list
+| entities | The entities that are part of the light group entity. | [] | list
 
 ## Usage
 1. Import the blueprints (see the "Blueprints" section) into your Home Assistant instance.
