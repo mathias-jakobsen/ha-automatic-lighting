@@ -84,6 +84,7 @@ class AL_OptionsFlow(OptionsFlow):
             self._data[CONF_LIGHT_GROUPS] = {}
 
         if user_input is not None:
+            self._data[CONF_BLOCK_DURATION] = user_input[CONF_BLOCK_DURATION]
             light_groups = {}
 
             for key in user_input[CONF_LIGHT_GROUPS]:

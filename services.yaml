@@ -1,3 +1,24 @@
+block:
+  description: Blocks the entity, preventing light profiles to be turned on.
+  fields:
+    entity_id:
+      description: The id of the Automatic Lighting switch.
+      example: switch.automatic_lighting_test
+      required: true
+      selector:
+        entity:
+          domain: switch
+          integation: automatic_lighting
+    duration:
+      description: The duration the entity should be blocked. If unset, the entity will be blocked for the default block duration.
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 1000000
+          unit_of_measurement: s
+
 track_lights:
   description: Add lights to the the group of tracked lights that will apply the blocked state, when manual control is detected.
   fields:

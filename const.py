@@ -3,7 +3,7 @@
 #-----------------------------------------------------------#
 
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_BRIGHTNESS_PCT, ATTR_KELVIN, ATTR_RGB_COLOR, VALID_BRIGHTNESS, VALID_BRIGHTNESS_PCT
-from homeassistant.const import CONF_ID, CONF_STATE
+from homeassistant.const import CONF_ID
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
@@ -14,6 +14,7 @@ import voluptuous as vol
 
 # ------ Configuration ---------------
 CONF_BLOCK_DURATION = "block_duration"
+CONF_DURATION = "duration"
 CONF_LIGHT_GROUPS = "light_groups"
 CONF_LIGHTS = "lights"
 CONF_STATUS = "status"
@@ -52,6 +53,10 @@ VALID_WHITE_VALUE = vol.All(vol.Coerce(int), vol.Range(min=0, max=255))
 #-----------------------------------------------------------#
 #       Schemas
 #-----------------------------------------------------------#
+
+SERVICE_SCHEMA_BLOCK = {
+    vol.Optional(CONF_DURATION): cv.positive_int
+}
 
 SERVICE_SCHEMA_TRACK_LIGHTS = {
     vol.Required(CONF_LIGHTS): vol.Any(dict, list, str)

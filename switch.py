@@ -4,7 +4,7 @@
 
 from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
 from . import DOMAIN_FRIENDLY_NAME, LOGGER_BASE_NAME
-from .const import ATTR_BLOCKED_UNTIL, ATTR_STATUS, CONF_BLOCK_DURATION, CONF_LIGHT_GROUPS, CONF_STATUS, DEFAULT_BLOCK_DURATION, EVENT_DATA_TYPE_REQUEST, EVENT_DATA_TYPE_RESET, EVENT_TYPE_AUTOMATIC_LIGHTING, SERVICE_SCHEMA_TRACK_LIGHTS, SERVICE_SCHEMA_TURN_ON, SERVICE_TRACK_LIGHTS, STATUS_ACTIVE, STATUS_BLOCKED, STATUS_IDLE
+from .const import ATTR_BLOCKED_UNTIL, ATTR_STATUS, CONF_BLOCK_DURATION, CONF_DURATION, CONF_LIGHT_GROUPS, CONF_STATUS, DEFAULT_BLOCK_DURATION, EVENT_DATA_TYPE_REQUEST, EVENT_DATA_TYPE_RESET, EVENT_TYPE_AUTOMATIC_LIGHTING, SERVICE_BLOCK, SERVICE_SCHEMA_BLOCK, SERVICE_SCHEMA_TRACK_LIGHTS, SERVICE_SCHEMA_TURN_ON, SERVICE_TRACK_LIGHTS, STATUS_ACTIVE, STATUS_BLOCKED, STATUS_IDLE
 from .helpers import EntityBase, Profile, async_resolve_target, list_merge_unique, track_automations_changed, track_manual_control
 from datetime import datetime, timedelta
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
@@ -28,6 +28,7 @@ BLOCK_THROTTLE_TIME = 0.2
 REQUEST_DEBOUNCE_TIME = 0.2
 RESET_DEBOUNCE_TIME = 0.5
 START_DELAY = 0.5
+TURN_ON_THROTTLE_TIME = 0.2
 
 
 # -----------------------------------------------------------#
@@ -44,6 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
 # -----------------------------------------------------------#
 
 def register_services(platform: EntityPlatform) -> None:
+    platform.async_register_entity_service(SERVICE_BLOCK, SERVICE_SCHEMA_BLOCK, "_async_service_block")
     platform.async_register_entity_service(SERVICE_TRACK_LIGHTS, SERVICE_SCHEMA_TRACK_LIGHTS, "_async_service_track_lights")
     platform.async_register_entity_service(SERVICE_TURN_OFF, {}, "_async_service_turn_off")
     platform.async_register_entity_service(SERVICE_TURN_ON, SERVICE_SCHEMA_TURN_ON, "_async_service_turn_on")
@@ -78,8 +80,8 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         self._tracked_lights : List[str]      = list_merge_unique(*self._light_groups.values())
 
         # --- Status ----------
-        self._current_profile : Dict[str, Any] = None
-        self._current_status  : str            = STATUS_IDLE
+        self._current_profile : Profile = None
+        self._current_status  : str     = STATUS_IDLE
 
         # --- Timers ----------
         self._block_timer   : Callable = None
@@ -354,6 +356,15 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
     #       Service Methods
     #--------------------------------------------#
 
+    async def _async_service_block(self, **service_data: Any) -> None:
+        """ Handles a call to the 'automatic_lighting.block' service. """
+        if not self.is_on:
+            return
+
+        self._reset_request_timer()
+        duration = service_data.get(CONF_DURATION, self._block_duration if self.is_blocked else self._block_config_duration)
+        self._block(duration)
+
     async def _async_service_track_lights(self, **service_data: Any) -> None:
         """ Handles a call to the 'automatic_lighting.track_lights' service. """
         if not self.is_on:
@@ -370,6 +381,9 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
             return
 
         if self.is_blocked:
+            return
+
+        if self._request_timer:
             return
 
         if not self._current_profile:
@@ -392,6 +406,9 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
                 return
 
             self._current_profile = Profile(id, status, lights, attributes)
+            return
+
+        if self._current_profile and (datetime.now() - self._current_profile.time_of_creation).total_seconds() < TURN_ON_THROTTLE_TIME:
             return
 
         if self.is_blocked:

@@ -2,6 +2,7 @@
 #       Imports
 #-----------------------------------------------------------#
 
+from datetime import datetime
 from typing import Any, Dict, List
 
 
@@ -20,6 +21,7 @@ class Profile:
         self._status = status
         self._lights = lights
         self._attributes = attributes
+        self._time_of_creation = datetime.now()
 
 
     #--------------------------------------------#
@@ -45,3 +47,8 @@ class Profile:
     def status(self) -> str:
         """ Returns the status. """
         return self._status
+
+    @property
+    def time_of_creation(self) -> datetime:
+        """ Returns the time of creation. """
+        return self._time_of_creation
