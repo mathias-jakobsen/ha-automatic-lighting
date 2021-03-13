@@ -5,6 +5,12 @@ A Home Assistant custom component that provides a set of events and services to 
 Idle Lighting (Kelvin):\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_kelvin.yaml
 
+Idle Lighting (RGB):\
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_rgb.yaml
+
+Idle Lighting (Adaptive):\
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_adaptive.yaml
+
 Active Lighting (Kelvin):\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_kelvin.yaml
 
