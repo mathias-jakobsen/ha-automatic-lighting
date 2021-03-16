@@ -2,17 +2,26 @@
 A Home Assistant custom component that provides a set of events and services to facilitate more advanced lighting setups with Home Assistant's default automation and blueprint engine
 
 ## Blueprints
-Idle Lighting (Kelvin):\
+### Idle Lighting
+Adaptive:\
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_adaptive.yaml
+
+Kelvin:\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_kelvin.yaml
 
-Active Lighting (Kelvin):\
+RGB:\
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_idle_rgb.yaml
+
+### Active Lighting
+Adaptive:\
+https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_adaptive.yaml
+
+Kelvin:\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_kelvin.yaml
 
-Active Lighting (RGB):\
+RGB:\
 https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_rgb.yaml
 
-Active Lighting (Adaptive):\
-https://raw.githubusercontent.com/mathias-jakobsen/ha-blueprints/main/automation/mathias-jakobsen/al_active_adaptive.yaml
 
 ## Features
 - Provides events and services to set ambient and triggered lighting through Home Assistant automations and blueprints.
