@@ -4,13 +4,13 @@
 
 from homeassistant.components.automation import EVENT_AUTOMATION_RELOADED
 from . import DOMAIN_FRIENDLY_NAME, LOGGER_BASE_NAME
-from .const import ATTR_BLOCKED_UNTIL, ATTR_STATUS, CONF_BLOCK_DURATION, CONF_DURATION, CONF_LIGHT_GROUPS, CONF_STATUS, DEFAULT_BLOCK_DURATION, EVENT_DATA_TYPE_REQUEST, EVENT_DATA_TYPE_RESET, EVENT_TYPE_AUTOMATIC_LIGHTING, SERVICE_BLOCK, SERVICE_SCHEMA_BLOCK, SERVICE_SCHEMA_TRACK_LIGHTS, SERVICE_SCHEMA_TURN_ON, SERVICE_TRACK_LIGHTS, STATUS_ACTIVE, STATUS_BLOCKED, STATUS_IDLE
+from .const import ATTR_BLOCKED_UNTIL, ATTR_STATUS, ATTR_UNTIL, CONF_BLOCK_DURATION, CONF_DURATION, CONF_LIGHT_GROUPS, CONF_STATUS, DEFAULT_BLOCK_DURATION, EVENT_DATA_TYPE_REQUEST, EVENT_DATA_TYPE_RESET, EVENT_TYPE_AUTOMATIC_LIGHTING, SERVICE_BLOCK, SERVICE_SCHEMA_BLOCK, SERVICE_SCHEMA_TRACK_LIGHTS, SERVICE_SCHEMA_TURN_OFF, SERVICE_SCHEMA_TURN_ON, SERVICE_TRACK_LIGHTS, STATUS_ACTIVE, STATUS_BLOCKED, STATUS_IDLE
 from .helpers import EntityBase, Profile, async_resolve_target, list_merge_unique, track_automations_changed, track_manual_control
 from datetime import datetime, timedelta
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_ID, CONF_ENTITY_ID, CONF_ID, CONF_LIGHTS, CONF_NAME, EVENT_HOMEASSISTANT_START, SERVICE_TURN_OFF, SERVICE_TURN_ON, STATE_ON
+from homeassistant.const import ATTR_ID, CONF_DELAY, CONF_ENTITY_ID, CONF_ID, CONF_LIGHTS, CONF_NAME, EVENT_HOMEASSISTANT_START, SERVICE_TURN_OFF, SERVICE_TURN_ON, STATE_ON
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.entity_platform import EntityPlatform
@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
 def register_services(platform: EntityPlatform) -> None:
     platform.async_register_entity_service(SERVICE_BLOCK, SERVICE_SCHEMA_BLOCK, "_async_service_block")
     platform.async_register_entity_service(SERVICE_TRACK_LIGHTS, SERVICE_SCHEMA_TRACK_LIGHTS, "_async_service_track_lights")
-    platform.async_register_entity_service(SERVICE_TURN_OFF, {}, "_async_service_turn_off")
+    platform.async_register_entity_service(SERVICE_TURN_OFF, SERVICE_SCHEMA_TURN_OFF, "_async_service_turn_off")
     platform.async_register_entity_service(SERVICE_TURN_ON, SERVICE_SCHEMA_TURN_ON, "_async_service_turn_on")
 
 
@@ -80,13 +80,15 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         self._tracked_lights : List[str]      = list_merge_unique(*self._light_groups.values())
 
         # --- Status ----------
-        self._current_profile : Profile = None
-        self._current_status  : str     = STATUS_IDLE
+        self._current_profile       : Profile  = None
+        self._current_status        : str      = STATUS_IDLE
+        self._current_turn_off_time : datetime = None
 
         # --- Timers ----------
-        self._block_timer   : Callable = None
-        self._request_timer : Callable = None
-        self._reset_timer   : Callable = None
+        self._block_timer    : Callable = None
+        self._request_timer  : Callable = None
+        self._reset_timer    : Callable = None
+        self._turn_off_timer : Callable = None
 
 
     #-----------------------------------------------------------------------------#
@@ -110,6 +112,9 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
 
         if not self.is_blocked and self._current_profile:
             attributes.update({ ATTR_ID: self._current_profile.id, **self._current_profile.attributes })
+
+            if self._turn_off_timer:
+                attributes.update({ ATTR_UNTIL: self._current_turn_off_time })
 
         return attributes
 
@@ -205,6 +210,7 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         self._reset_block_timer()
         self._reset_request_timer()
         self._reset_reset_timer()
+        self._reset_turn_off_timer()
 
     def _setup_listeners(self, *args: Any) -> None:
         """ Sets up the event listeners. """
@@ -234,18 +240,25 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
             self._reset_timer()
             self._reset_timer = None
 
+    def _reset_turn_off_timer(self) -> None:
+        """ Resets the request timer. """
+        if self._turn_off_timer:
+            self._turn_off_timer()
+            self._turn_off_timer = None
+
 
     #--------------------------------------------#
     #       Event Methods
     #--------------------------------------------#
 
-    def _request(self) -> None:
+    def _request(self, *args: Any) -> None:
         """ Fires the request event, requesting the next lighting settings. """
         if self._request_timer:
             self._reset_request_timer()
         else:
             self.logger.debug(f"Firing request event.")
             self._current_profile = None
+            self._reset_turn_off_timer()
             self.fire_event(EVENT_TYPE_AUTOMATIC_LIGHTING, entity_id=self.entity_id, type=EVENT_DATA_TYPE_REQUEST)
 
         def _on_request_finished(*args: Any) -> None:
@@ -300,6 +313,8 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
 
         self.logger.debug(f"Blocking entity for {duration} seconds.")
         self._reset_block_timer()
+        self._reset_request_timer()
+        self._reset_turn_off_timer()
         self._block_duration = duration
         self._blocked_at = datetime.now()
         self._blocked_until = self._blocked_at + timedelta(seconds=self._block_duration) if self._block_duration is not None else None
@@ -361,7 +376,6 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         if not self.is_on:
             return
 
-        self._reset_request_timer()
         duration = service_data.get(CONF_DURATION, self._block_duration if self.is_blocked else self._block_config_duration)
         self._block(duration)
 
@@ -389,7 +403,13 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         if not self._current_profile:
             return
 
-        self._request()
+        delay = service_data.get(CONF_DELAY, None)
+        if delay is None:
+            self._request()
+        else:
+            self.logger.debug(f"Turning off profile {self._current_profile.id} in {delay} seconds.")
+            self._current_turn_off_time = datetime.now() + timedelta(seconds=delay)
+            self._turn_off_timer = async_call_later(self.hass, delay, self._request)
 
     async def _async_service_turn_on(self, **service_data: Any) -> None:
         """ Handles a call to the 'automatic_lighting.turn_on' service. """
@@ -420,6 +440,7 @@ class AL_SwitchEntity(SwitchEntity, RestoreEntity, EntityBase):
         self.logger.debug(f"Turning on profile {id} with following values: { {CONF_ENTITY_ID: lights, **attributes} }")
         self._current_profile = Profile(id, status, lights, attributes)
         self._current_status = status
+        self._reset_turn_off_timer()
         self.call_service(LIGHT_DOMAIN, SERVICE_TURN_ON, entity_id=lights, **attributes)
         self.async_schedule_update_ha_state(True)
 

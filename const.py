@@ -3,7 +3,7 @@
 #-----------------------------------------------------------#
 
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_BRIGHTNESS_PCT, ATTR_KELVIN, ATTR_RGB_COLOR, VALID_BRIGHTNESS, VALID_BRIGHTNESS_PCT
-from homeassistant.const import CONF_ID
+from homeassistant.const import CONF_DELAY, CONF_ID
 from homeassistant.helpers import config_validation as cv
 import voluptuous as vol
 
@@ -22,6 +22,7 @@ CONF_STATUS = "status"
 # --- Attributes ----------
 ATTR_BLOCKED_UNTIL = "blocked_until"
 ATTR_STATUS = "status"
+ATTR_UNTIL = "until"
 
 # ------ Defaults ---------------
 DEFAULT_BLOCK_DURATION = 300
@@ -60,6 +61,10 @@ SERVICE_SCHEMA_BLOCK = {
 
 SERVICE_SCHEMA_TRACK_LIGHTS = {
     vol.Required(CONF_LIGHTS): vol.Any(dict, list, str)
+}
+
+SERVICE_SCHEMA_TURN_OFF = {
+    vol.Optional(CONF_DELAY): cv.positive_int
 }
 
 SERVICE_SCHEMA_TURN_ON = {

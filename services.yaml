@@ -50,6 +50,16 @@ turn_off:
         entity:
           domain: switch
           integation: automatic_lighting
+    delay:
+      description: The delay before the lights are turned off.
+      example: 10
+      required: false
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 100000
+          step: 1
 
 turn_on:
   description: Turns on a profile with the applied settings.
